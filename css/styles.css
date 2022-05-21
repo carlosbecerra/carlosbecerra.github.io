@@ -1,0 +1,23 @@
+@font-face {
+    font-family: Titillium-Bold;
+    src: url(/fonts/TitilliumWeb-Bold.ttf);
+}
+@font-face {
+    font-family: Titillium-Light;
+    src: url(/fonts/TitilliumWeb-Light.ttf);
+}
+#header{
+   
+}
+#menu{
+    
+}
+h1{
+    font-family:Titillium-Bold
+}
+h2{
+    font-family: Titillium-Light;
+}
+ul {
+    list-style-type: none;
+}

@@ -3,27 +3,26 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Rasca y Revela — ¡Encuentra el género!</title>
+<title>¡Encuentra el género de nuestro bebe 👶 !</title>
 <style>
 :root{
-  --bg1:#fff7f9;
-  --bg2:#f0fbff;
   --card:#fff;
-  --accent:#ffe7f0;
   --shadow:0 10px 30px rgba(0,0,0,0.12);
-  --radius:14px;
   --font:"Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
+
+/* ★ ONE SINGLE BACKGROUND IMAGE */
 html,body{
   height:100%;
   margin:0;
   font-family:var(--font);
-  background:linear-gradient(135deg,var(--bg1),var(--bg2));
+  background: url("https://img.freepik.com/premium-photo/baby-shower-banner-with-cartoon-rocket-balloons_837518-2987.jpg?w=2000") center/cover no-repeat fixed;
   display:flex;
   align-items:center;
   justify-content:center;
   padding:20px;
 }
+
 .wrap{max-width:920px;width:100%;text-align:center;}
 header{margin-bottom:14px}
 h1{margin:0;font-size:26px;color:#333}
@@ -33,7 +32,7 @@ p.lead{margin:6px 0 16px;color:#444}
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:12px;
-  max-width:640px;
+  max-width:350px;
   margin:0 auto 18px;
 }
 
@@ -48,6 +47,12 @@ p.lead{margin:6px 0 16px;color:#444}
   touch-action:none;
 }
 
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    touch-action: none; /* prevents page moving while scratching */
+}
 .prize{
   position:absolute;
   inset:10px;
@@ -55,7 +60,7 @@ p.lead{margin:6px 0 16px;color:#444}
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:18px;
+  font-size:26px;
   font-weight:700;
   color:#333;
   user-select:none;
@@ -90,13 +95,19 @@ canvas{
 #winnerContent{
   position:relative;
   background:#fff;
-  border-radius:16px;
-  padding:30px 40px;
+  border-radius:18px;
+  padding:40px 50px;
   text-align:center;
   box-shadow:0 10px 30px rgba(0,0,0,0.3);
-  font-size:24px;
+  font-size:28px;
   color:#333;
+  animation: pop 0.5s ease-out;
 }
+@keyframes pop{
+  0%{transform:scale(0.5);opacity:0;}
+  100%{transform:scale(1);opacity:1;}
+}
+
 .firework{
   position:absolute;
   width:6px;
@@ -114,8 +125,8 @@ canvas{
 <body>
 <div class="wrap">
   <header>
-    <h1>Rasca y Revela — ¡Encuentra el género!</h1>
-    <p class="lead">Rasca los cuadros. Solo si revelas los 3 correctos aparecerá la sorpresa 🎉</p>
+    <h1>¡Encuentra el género de nuestro bebe 👶!</h1>
+    <p class="lead">Si revelas los 3 correctos 🎀= Niña , 💙= Niño</p>
   </header>
   <main>
     <div id="board" class="board"></div>
@@ -124,7 +135,8 @@ canvas{
 
 <div id="winnerModal">
   <div id="winnerContent">
-    🎉 ¡Poner acá el género! 🎉
+    🎉 <b>¡Tendremos un Niño!</b> 🎉  
+    <br><br> 👶✨
   </div>
 </div>
 
@@ -134,49 +146,68 @@ const MODAL = document.getElementById('winnerModal');
 
 const BRUSH = 15;
 const CLEAR_THRESHOLD = 0.50;
-const SYMBOLS = ["🎈","🧸","🐣","🍭","🧁","🌟","💤","🍼"];
 
+// ★ EMOJIS
+const SYMBOLS = ["🧸","🍼","🎀","💙"];
 const WIN_LINES = [
   [0,1,2],[3,4,5],[6,7,8],
   [0,3,6],[1,4,7],[2,5,8],
   [0,4,8],[2,4,6]
 ];
 
-// Escoger aleatoriamente una línea ganadora
+// ★ GENDER SETTING: "boy" or "girl"
+const gender = "boy";
+const winEmoji = gender==="boy" ? "💙" : "🎀";
+
+// ★ PICK WINNING LINE
 const winningLine = WIN_LINES[Math.floor(Math.random()*WIN_LINES.length)];
-const prizes = new Array(9).fill(null).map((_,i)=> SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)]);
 
-// Asignar el mensaje de género a los 3 ganadores
-winningLine.forEach(i => prizes[i] = "✨");
+// ★ CREATE PRIZES
+const prizes = new Array(9).fill(null);
+winningLine.forEach(i => prizes[i]=winEmoji);
 
-// Estado de tarjetas ganadoras reveladas
+// Fill remaining cards without creating extra winning lines
+for(let i=0;i<9;i++){
+  if(prizes[i]===null){
+    let rand;
+    do {
+      rand = SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)];
+    } while(rand === winEmoji); // ensures no extra match
+    prizes[i] = rand;
+  }
+}
+
 let revealedWins = new Set();
 
 function createBoard(){
   BOARD.innerHTML='';
   for(let i=0;i<9;i++){
-    const card = document.createElement('div');
+    const card=document.createElement('div');
     card.className='card';
     card.dataset.index=i;
-    const prize = document.createElement('div');
+
+    const prize=document.createElement('div');
     prize.className='prize';
-    prize.innerHTML = `<div style="font-size:30px">${prizes[i]==="✨" ? " ✨" : prizes[i]}</div>`;
+    prize.innerHTML=`<div>${prizes[i]}</div>`;
     card.appendChild(prize);
-    const cvs = document.createElement('canvas');
+
+    const cvs=document.createElement('canvas');
     card.appendChild(cvs);
     BOARD.appendChild(card);
+
     setupCanvas(card,cvs,prize,i);
   }
 }
 
 function setupCanvas(card, canvasEl, prizeEl, index){
   const ctx = canvasEl.getContext('2d');
+
   function fit(){
     const rect = card.getBoundingClientRect();
     canvasEl.width = rect.width;
     canvasEl.height = rect.height;
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.fillStyle = '#C6C6C6';
+    ctx.globalCompositeOperation='source-over';
+    ctx.fillStyle='#C6C6C6';
     ctx.fillRect(0,0,canvasEl.width,canvasEl.height);
   }
   fit(); window.addEventListener('resize', fit);
@@ -184,19 +215,19 @@ function setupCanvas(card, canvasEl, prizeEl, index){
   let drawing=false;
   function getPos(e){
     const rect = canvasEl.getBoundingClientRect();
-    const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
-    const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
-    return { x: clientX - rect.left, y: clientY - rect.top };
+    const cX=(e.touches?.[0]?.clientX ?? e.clientX);
+    const cY=(e.touches?.[0]?.clientY ?? e.clientY);
+    return {x:cX-rect.left, y:cY-rect.top};
   }
-  function touchPrevent(e){ if(e.cancelable) e.preventDefault(); }
+  function block(e){ if(e.cancelable) e.preventDefault(); }
 
-  function start(e){ drawing=true; touchPrevent(e); draw(e); }
-  function end(e){ drawing=false; checkCleared(); }
+  function start(e){ drawing=true; block(e); draw(e); }
+  function end(){ drawing=false; checkCleared(); }
   function draw(e){
     if(!drawing) return;
-    touchPrevent(e);
-    const p = getPos(e);
-    ctx.globalCompositeOperation = 'destination-out';
+    block(e);
+    const p=getPos(e);
+    ctx.globalCompositeOperation='destination-out';
     ctx.beginPath();
     ctx.arc(p.x,p.y,BRUSH,0,Math.PI*2);
     ctx.fill();
@@ -214,26 +245,30 @@ function setupCanvas(card, canvasEl, prizeEl, index){
 
   function checkCleared(){
     try{
-      const data = ctx.getImageData(0,0,canvasEl.width,canvasEl.height).data;
-      let total = data.length/4;
-      let countOpaque = 0;
-      const step = 8;
+      const data=ctx.getImageData(0,0,canvasEl.width,canvasEl.height).data;
+      let total=data.length/4;
+      let opaque=0;
+      const step=8;
+
       for(let i=3;i<data.length;i+=4*step){
-        if(data[i]>16) countOpaque++;
+        if(data[i]>16) opaque++;
       }
-      const ratio = 1 - (countOpaque*step/total);
+
+      const ratio = 1 - (opaque*step/total);
       if(ratio >= CLEAR_THRESHOLD){
         ctx.clearRect(0,0,canvasEl.width,canvasEl.height);
         canvasEl.style.pointerEvents='none';
         prizeEl.style.opacity=1;
-        if(winningLine.includes(index)) {
+
+        if(winningLine.includes(index)){
           revealedWins.add(index);
-          if(revealedWins.size === 3){
+          if(revealedWins.size===3){
             showWinnerModal();
           }
         }
       }
-    }catch(err){
+
+    }catch{
       canvasEl.style.pointerEvents='none';
       prizeEl.style.opacity=1;
     }
@@ -242,17 +277,26 @@ function setupCanvas(card, canvasEl, prizeEl, index){
 
 function showWinnerModal(){
   MODAL.style.display='flex';
-  // Fireworks effect
+
+  const emoji = gender==="boy" ? "🚗" : "🌸";
+
   for(let i=0;i<40;i++){
-    const fw = document.createElement('div');
-    fw.className='firework';
-    fw.style.setProperty('--dx', (Math.random()*200-100)+'px');
-    fw.style.setProperty('--dy', (Math.random()*200-100)+'px');
-    fw.style.background = `hsl(${Math.random()*360},100%,60%)`;
-    fw.style.left='50%';
-    fw.style.top='50%';
+    const fw=document.createElement('div');
+    fw.style.position='absolute';
+    fw.style.left = Math.random() * 100 + '%';
+    fw.style.top = '-10%';
+    fw.style.fontSize = Math.random()*20 + 15 + 'px';
+    fw.textContent = emoji;
     MODAL.appendChild(fw);
-    setTimeout(()=>fw.remove(),800);
+
+    const dx = (Math.random()*200-100);
+    const dy = (Math.random()*300 + 100);
+    fw.animate([
+      { transform: `translate(0,0)`, opacity:1 },
+      { transform: `translate(${dx}px, ${dy}px)`, opacity:0 }
+    ], { duration: 1500 + Math.random()*1000, easing: 'ease-out' });
+
+    setTimeout(()=>fw.remove(), 2500);
   }
 }
 
